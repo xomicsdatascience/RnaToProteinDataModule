@@ -1,9 +1,13 @@
+from datetime import datetime
+
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from abc import ABC, abstractmethod
 
 class DataSplitter(ABC):
+    random_state = 0
+
     @abstractmethod
     def split_and_normalize(self, X, Y):
         pass
@@ -14,7 +18,6 @@ class DataSplitter(ABC):
 
 class StandardDataSplitter(DataSplitter):
     val_size = 0.1
-    random_state = 0
 
     def split_and_normalize(self, X, Y):
         scalerX = StandardScaler()
@@ -49,7 +52,6 @@ class NoSplitJustNormalizer(DataSplitter):
 
 class FiveByTwoDataSplitter(DataSplitter):
     test_size = 0.1
-    random_state = 0
 
     def __init__(self, orientation):
         self.orientation = orientation

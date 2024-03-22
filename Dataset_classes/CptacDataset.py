@@ -5,10 +5,10 @@ from .DataSplitters import StandardDataSplitter, FiveByTwoDataSplitter, NoSplitJ
 class CptacDataset(Dataset):
     def __init__(self, dataSplitter, type, source='bcm', isoformStrategy='first'):
         super().__init__(dataSplitter)
-        self.cptacMod  = get_cptac_mod(type)
-        self.source = source
-        self.proteome = self.cptacMod.get_proteomics(source=self.source).fillna(0)
-        self.transcriptome = self.cptacMod.get_transcriptomics(source=self.source).fillna(0)
+        cptacMod  = get_cptac_mod(type)
+        self.type = type
+        self.proteome = cptacMod.get_proteomics(source=source).fillna(0)
+        self.transcriptome = cptacMod.get_transcriptomics(source=source).fillna(0)
         self.match_patient_ids_between_omic_layers()
         self.deal_with_isoforms(isoformStrategy)
 
@@ -56,7 +56,4 @@ if __name__ == "__main__":
     #splitter = NoSplitJustNormalizer()
     splitter = FiveByTwoDataSplitter()
     brca = CptacDataset(splitter, type='brca')
-    print(brca.transcriptome)
     d = brca.split_and_normalize(random_state=0)
-    #print(d['X_train'].shape)
-    print(d['X_train_firstOrientation'].shape)

@@ -16,7 +16,7 @@ datasetNames = [
     'ov',
     'pdac',
     #'ucec',
-    'ad',
+    #'ad',
 ]
 
 class DatasetProcessor(ABC):
@@ -30,11 +30,11 @@ class DatasetProcessor(ABC):
         self.allProteinGeneTargets = self.identify_all_shared_targets('proteome')
         self.allTranscriptGeneTargets = self.identify_transcript_targets()
 
+        self.ensure_mrna_direct_precursors_to_proteins_listed_first_in_transcriptome()
+
         if self.debug:
             self.allProteinGeneTargets = self.allProteinGeneTargets[:100]
             self.allTranscriptGeneTargets = self.allTranscriptGeneTargets[:500]
-
-        self.ensure_mrna_direct_precursors_to_proteins_listed_first_in_transcriptome()
 
         # only use common proteins/transcripts
         for datasetName, dataset in self.datasets.items():
