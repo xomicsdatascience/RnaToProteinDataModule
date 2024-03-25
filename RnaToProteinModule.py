@@ -2,12 +2,21 @@ import pytorch_lightning as pl
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 
-from .Dataset_classes.DatasetProcessors import DatasetProcessor
+from Dataset_classes.DatasetProcessors import DatasetProcessor
 
 class RnaToProteinDataModule(pl.LightningDataModule):
     def __init__(self, dataProcessor: DatasetProcessor):
         super().__init__()
         self.dataProcessor = dataProcessor
+        if hasattr(self.dataProcessor, 'X_train'):
+            self.update_data_module_values()
+
+    def update_data_module_values(self):
+        self.input_size = self.dataProcessor.X_train.shape[1]
+        self.output_size = self.dataProcessor.Y_train.shape[1]
+        self.train_dataset = TensorDataset(torch.from_numpy(self.dataProcessor.X_train), torch.from_numpy(self.dataProcessor.Y_train))
+        self.val_dataset = TensorDataset(torch.from_numpy(self.dataProcessor.X_val), torch.from_numpy(self.dataProcessor.Y_val))
+
 
     def prepare_data(self):
         if hasattr(self.dataProcessor, 'X_train'): return
@@ -17,10 +26,7 @@ class RnaToProteinDataModule(pl.LightningDataModule):
     def setup(self, stage):
         if hasattr(self.dataProcessor, 'X_train'): return
         self.dataProcessor.split_full_dataset()
-        self.input_size = self.dataProcessor.X_train.shape[1]
-        self.output_size = self.dataProcessor.Y_train.shape[1]
-        self.train_dataset = TensorDataset(torch.from_numpy(self.dataProcessor.X_train), torch.from_numpy(self.dataProcessor.Y_train))
-        self.val_dataset = TensorDataset(torch.from_numpy(self.dataProcessor.X_val), torch.from_numpy(self.dataProcessor.Y_val))
+        self.update_data_module_values()
 
     def train_dataloader(self):
         torch.manual_seed(self.dataProcessor.random_state)

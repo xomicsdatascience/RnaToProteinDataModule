@@ -6,7 +6,9 @@ from sklearn.preprocessing import StandardScaler
 from abc import ABC, abstractmethod
 
 class DataSplitter(ABC):
-    random_state = 0
+
+    def __init__(self, random_state=0):
+        self.random_state = random_state
 
     @abstractmethod
     def split_and_normalize(self, X, Y):
@@ -17,7 +19,10 @@ class DataSplitter(ABC):
 
 
 class StandardDataSplitter(DataSplitter):
-    val_size = 0.1
+
+    def __init__(self, random_state, val_size=0.1):
+        super().__init__(random_state=random_state)
+        self.val_size = val_size
 
     def split_and_normalize(self, X, Y):
         scalerX = StandardScaler()
@@ -53,8 +58,10 @@ class NoSplitJustNormalizer(DataSplitter):
 class FiveByTwoDataSplitter(DataSplitter):
     test_size = 0.1
 
-    def __init__(self, orientation):
+    def __init__(self, random_state, orientation, test_size=0.1):
+        super().__init__(random_state=random_state)
         self.orientation = orientation
+        self.test_size = test_size
 
     def split_and_normalize(self, X, Y):
         scalerX = StandardScaler()

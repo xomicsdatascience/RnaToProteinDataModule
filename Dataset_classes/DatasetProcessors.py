@@ -5,25 +5,30 @@ from abc import ABC, abstractmethod
 import random
 import numpy as np
 
-datasetNames = [
-    'brca',
-    'ccrcc',
-    'coad',
-    'gbm',
-    'hnscc',
-    'lscc',
-    'luad',
-    'ov',
-    'pdac',
-    #'ucec',
-    #'ad',
-]
 
 class DatasetProcessor(ABC):
+    datasetNames = [
+        'brca',
+        'ccrcc',
+        'coad',
+        'gbm',
+        'hnscc',
+        'lscc',
+        'luad',
+        'ov',
+        'pdac',
+        # 'ucec',
+        # 'ad',
+    ]
     datasets = dict()
     random_state = 0
     debug = False
-    isTranscriptOnlyShared = True
+    isOnlyUseTranscriptsSharedBetweenDatasets = True
+
+    def __init__(self, random_state, isOnlyCodingTranscripts):
+        self.random_state = random_state
+        self.isOnlyCodingTranscripts = isOnlyCodingTranscripts
+
 
     def synchronize_all_datasets(self):
 
@@ -35,6 +40,9 @@ class DatasetProcessor(ABC):
         if self.debug:
             self.allProteinGeneTargets = self.allProteinGeneTargets[:100]
             self.allTranscriptGeneTargets = self.allTranscriptGeneTargets[:500]
+
+        if self.isOnlyCodingTranscripts:
+            self.allTranscriptGeneTargets = self.allProteinGeneTargets.copy()
 
         # only use common proteins/transcripts
         for datasetName, dataset in self.datasets.items():
@@ -62,7 +70,7 @@ class DatasetProcessor(ABC):
         return sorted(allTargets)
 
     def identify_transcript_targets(self):
-        if self.isTranscriptOnlyShared:
+        if self.isOnlyUseTranscriptsSharedBetweenDatasets:
             return self.identify_all_shared_targets('transcriptome')
         else:
             return self.identify_all_targets('transcriptome')
@@ -93,8 +101,9 @@ class DatasetProcessor(ABC):
 
     def prepare_data(self):
         self.datasets = {}
-        for datasetName in datasetNames:
+        for datasetName in self.datasetNames:
             datasetSplitter = self.return_data_splitter(datasetName)
+            if datasetSplitter == None: continue
             datasetSplitter.random_state = self.random_state
             self.datasets[datasetName] = return_dataset(datasetSplitter, datasetName)
 
@@ -103,36 +112,35 @@ class DatasetProcessor(ABC):
         pass
 
 class FiveByTwoTargetDatasetProcessor(DatasetProcessor):
-    def __init__(self, random_state, target, orientation):
-        self.random_state = random_state
+    def __init__(self, random_state, isOnlyCodingTranscripts, target, orientation, trainingMethod):
+        super().__init__(random_state=random_state, isOnlyCodingTranscripts=isOnlyCodingTranscripts)
         self.target = target
         self.orientation = orientation
+        self.trainingMethod = trainingMethod
 
     def return_data_splitter(self, datasetName):
         if self.target == datasetName or self.target == 'all':
-            return FiveByTwoDataSplitter(self.orientation)
-        else:
+            return FiveByTwoDataSplitter(random_state=self.random_state, orientation=self.orientation)
+        elif self.trainingMethod == 'allDatasets':
             return NoSplitJustNormalizer()
+        elif self.trainingMethod == 'justTargetDataset':
+            return
 
 class TargetDatasetProcessor(DatasetProcessor):
     def __init__(self, random_state, target):
-        self.random_state = random_state
+        super().__init__(random_state=random_state)
         self.target = target
 
     def return_data_splitter(self, datasetName):
         if self.target == datasetName:
-            dataSplitter = StandardDataSplitter()
-            dataSplitter.val_size = 0.2
+            dataSplitter = StandardDataSplitter(random_state=self.random_state, val_size=0.2)
             return dataSplitter
         else:
-            return NoSplitJustNormalizer()
+            return NoSplitJustNormalizer(random_state=self.random_state)
 
 class StandardDatasetProcessor(DatasetProcessor):
-    def __init__(self, random_state=0):
-        self.random_state = random_state
-
     def return_data_splitter(self, datasetName):
-        return StandardDataSplitter()
+        return StandardDataSplitter(random_state=self.random_state)
 
 
 

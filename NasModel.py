@@ -3,10 +3,10 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from .BlockModules.smallLayers import activation, AddMRNA, AddResidual
-from .BlockModules.FullyConnectedBlock import FullyConnectedBlock
-from .BlockModules.Resnet3Block import Resnet3Block
-from .BlockModules.Resnet4Block import Resnet4Block
+from BlockModules.smallLayers import activation, AddMRNA, AddResidual
+from BlockModules.FullyConnectedBlock import FullyConnectedBlock
+from BlockModules.Resnet3Block import Resnet3Block
+from BlockModules.Resnet4Block import Resnet4Block
 
 
 class NasModel(pl.LightningModule):

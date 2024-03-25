@@ -1,2 +1,5 @@
 __pycache__/*
 BlockModules/__pycache__/*
+Dataset_classes/__pycache__/*
+sample_dataset_nas_output*
+logs*
