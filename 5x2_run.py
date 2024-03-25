@@ -21,7 +21,7 @@ datasetNames = [
     'all',
 ]
 numDatasets = len(datasetNames)
-numIterations = 50
+numIterations = 100
 models = ['dummy','forest','baseNN','NAS14NN']
 
 curIdx = int(sys.argv[1])
@@ -38,7 +38,7 @@ val_loss_func = _5x2_models.run(targetModel)
 for orientation in ['first','second']:
     for trainingMethod in ['allDatasets','justTargetDataset']:
         dataProcessor = FiveByTwoTargetDatasetProcessor(random_state=iterationNum, isOnlyCodingTranscripts=False, target=targetDataset, orientation=orientation, trainingMethod=trainingMethod)
-        dataProcessor.debug = True
+        #dataProcessor.debug = True
         dataProcessor.prepare_data()
         dataProcessor.synchronize_all_datasets()
         dataProcessor.split_full_dataset()

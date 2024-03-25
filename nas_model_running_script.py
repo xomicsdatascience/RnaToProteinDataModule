@@ -1,4 +1,4 @@
-'''
+#'''
 import logging
 import sys
 import io
@@ -101,11 +101,15 @@ def run_training_job(random_state):
     dataProcessor = StandardDatasetProcessor(random_state=random_state, isOnlyCodingTranscripts=args.onlyCodingTranscripts)
     if args.removeCoad: dataProcessor.datasetNames = [x for x in dataProcessor.datasetNames if x != 'coad']
     if args.useUnsharedTranscripts: dataProcessor.isOnlyUseTranscriptsSharedBetweenDatasets = False
-    dataProcessor.debug = True
+    #dataProcessor.debug = True
 
     dataModule = RnaToProteinDataModule(dataProcessor)
     dataModule.prepare_data()
     dataModule.setup(stage=None)
+    
+    print(dataModule.input_size)
+    print(dataModule.output_size)
+
     cptac_model = NasModel(dataModule.input_size, dataModule.output_size, args)
 
     # Initialize a trainer (don't log anything since things get so slow...)

@@ -1,4 +1,4 @@
-'''
+#'''
 import logging
 import sys
 import io
@@ -379,7 +379,7 @@ experiment = Experiment(
     runner=ax_runner,
 )
 
-total_trials = 30  # total evaluation budget
+total_trials = 200  # total evaluation budget
 
 from ax.modelbridge.dispatch_utils import choose_generation_strategy
 
@@ -395,7 +395,7 @@ scheduler = Scheduler(
     experiment=experiment,
     generation_strategy=gs,
     options=SchedulerOptions(
-        total_trials=total_trials, max_pending_trials=8
+        total_trials=total_trials, max_pending_trials=1
     ),
 )
 
