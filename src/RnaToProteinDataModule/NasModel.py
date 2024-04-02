@@ -2,11 +2,8 @@ import pytorch_lightning as pl
 import torch
 from torch import nn
 from torch.nn import functional as F
-
-from BlockModules.smallLayers import activation, AddMRNA, AddResidual
-from BlockModules.FullyConnectedBlock import FullyConnectedBlock
-from BlockModules.Resnet3Block import Resnet3Block
-from BlockModules.Resnet4Block import Resnet4Block
+import numpy as np
+from RnaToProteinDataModule.BlockModules import activation, AddMRNA, AddResidual, FullyConnectedBlock, Resnet3Block, Resnet4Block
 
 
 class NasModel(pl.LightningModule):
@@ -86,3 +83,15 @@ class NasModel(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optimizer
+
+    def predict_step(self, batch, batch_idx: int , dataloader_idx: int = None):
+        return self(batch)
+
+    def predict(self, input_instance):
+        x = torch.from_numpy(np.array(input_instance))
+        print(x)
+        print(input_instance)
+        print(x.shape)
+        output = self(x)
+        print(output)
+        return self(x)

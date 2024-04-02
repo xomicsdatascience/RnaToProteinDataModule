@@ -15,10 +15,7 @@ from IPython.utils import io
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping
 from torch.utils.data import DataLoader
-from RnaToProteinModule import RnaToProteinDataModule
-from NasModel import NasModel
-
-
+from RnaToProteinDataModule import RnaToProteinDataModule, NasModel
 
 def run(model):
     if model == 'dummy': return run_dummy
@@ -64,6 +61,24 @@ def run_nas14(dataProcessor):
     with io.capture_output() as captured:
         val_loss = trainer.validate(datamodule=dataModule)[0]["val_loss"]
     return val_loss
+
+def make_nas14(dataProcessor):
+    args = make_args_nas14()
+    dataModule = RnaToProteinDataModule(dataProcessor)
+    dataModule.prepare_data()
+    dataModule.setup(stage=None)
+    cptac_model = NasModel(dataModule.input_size, dataModule.output_size, args)
+
+    # Initialize a trainer (don't log anything since things get so slow...)
+    trainer = Trainer(
+        logger=False,
+        deterministic=True,  # Do we want a bit of noise?
+        callbacks=[EarlyStopping(monitor="val_loss", mode="min", patience=10)]
+    )
+
+    # Train the model and log time ⚡
+    trainer.fit(model=cptac_model, datamodule=dataModule)
+    return cptac_model, dataModule
 
 def make_args_nas14():
     args = {}

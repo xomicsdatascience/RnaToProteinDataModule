@@ -42,6 +42,22 @@ from torchx import specs
 from torchx.components import utils
 import time
 import os
+import tempfile
+from ax.runners.torchx import TorchXRunner
+from ax.core import (
+    ChoiceParameter,
+    ParameterType,
+    RangeParameter,
+    FixedParameter,
+)
+from ax.core.search_space import HierarchicalSearchSpace
+from ax.metrics.tensorboard import TensorboardCurveMetric
+from ax.core import Objective
+from ax.core.optimization_config import OptimizationConfig
+from ax.core import Experiment
+from ax.modelbridge.dispatch_utils import choose_generation_strategy
+from ax.service.scheduler import Scheduler, SchedulerOptions
+from ax.service.utils.report_utils import exp_to_df
 
 curDir = os.getcwd()
 
@@ -71,11 +87,9 @@ def trainer(trial_idx: int = -1, *args, **kwargs) -> specs.AppDef:
     #subprocess.run(['python']+output.roles[0].args)
     return output
 
-import tempfile
-from ax.runners.torchx import TorchXRunner
 
 # Make a temporary dir to log our results into
-log_dir = tempfile.mkdtemp(prefix='logs', dir=curDir)
+log_dir = tempfile.mkdtemp(prefix='logs_zDELETE', dir=curDir)
 
 ax_runner = TorchXRunner(
     tracker_base="/tmp/",
@@ -86,14 +100,6 @@ ax_runner = TorchXRunner(
     component_const_params={"log_path": log_dir},
     cfg={},
 )
-
-from ax.core import (
-    ChoiceParameter,
-    ParameterType,
-    RangeParameter,
-    FixedParameter,
-)
-from ax.core.search_space import HierarchicalSearchSpace
 
 parameters = [
     # NOTE: In a real-world setting, hidden_size_1 and hidden_size_2
@@ -335,7 +341,6 @@ search_space = HierarchicalSearchSpace(
     parameter_constraints=[],
 )
 
-from ax.metrics.tensorboard import TensorboardCurveMetric
 
 class MyTensorboardMetric(TensorboardCurveMetric):
 
@@ -363,14 +368,11 @@ val_loss = MyTensorboardMetric(
     lower_is_better=True,
 )
 
-from ax.core import Objective
-from ax.core.optimization_config import OptimizationConfig
+
 
 opt_config = OptimizationConfig(
     objective=Objective(metric=val_loss, minimize=True)
 )
-
-from ax.core import Experiment
 
 experiment = Experiment(
     name="torchx_cptac",
@@ -379,9 +381,8 @@ experiment = Experiment(
     runner=ax_runner,
 )
 
-total_trials = 30  # total evaluation budget
+total_trials = 20  # total evaluation budget
 
-from ax.modelbridge.dispatch_utils import choose_generation_strategy
 
 gs = choose_generation_strategy(
     search_space=experiment.search_space,
@@ -389,19 +390,17 @@ gs = choose_generation_strategy(
     num_trials=total_trials,
   )
 
-from ax.service.scheduler import Scheduler, SchedulerOptions
 
 scheduler = Scheduler(
     experiment=experiment,
     generation_strategy=gs,
     options=SchedulerOptions(
-        total_trials=total_trials, max_pending_trials=8
+        total_trials=total_trials, max_pending_trials=10
     ),
 )
 
 scheduler.run_all_trials()
 
-from ax.service.utils.report_utils import exp_to_df
 
 df = exp_to_df(experiment).sort_values('val_loss', ascending=True)
 df.to_csv(os.path.join(curDir, f'sample_dataset_nas_output_{time.strftime("%Y%m%d-%H%M%S")}.csv'), index=False)

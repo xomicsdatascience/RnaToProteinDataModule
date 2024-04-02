@@ -4,7 +4,7 @@ import time
 import os
 import sys
 import _5x2_models
-from Dataset_classes.DatasetProcessors import FiveByTwoTargetDatasetProcessor
+from RnaToProteinDataModule.Dataset_classes import FiveByTwoTargetDatasetProcessor
 
 datasetNames = [
     'brca',

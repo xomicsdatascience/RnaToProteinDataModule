@@ -2,7 +2,7 @@ import pytorch_lightning as pl
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 
-from Dataset_classes.DatasetProcessors import DatasetProcessor
+from RnaToProteinDataModule.Dataset_classes import DatasetProcessor
 
 class RnaToProteinDataModule(pl.LightningDataModule):
     def __init__(self, dataProcessor: DatasetProcessor):

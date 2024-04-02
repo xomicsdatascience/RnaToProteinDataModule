@@ -4,7 +4,8 @@ from .DataSplitters import StandardDataSplitter, FiveByTwoDataSplitter, NoSplitJ
 from abc import ABC, abstractmethod
 import random
 import numpy as np
-
+from collections import OrderedDict
+import pandas as pd
 
 class DatasetProcessor(ABC):
     datasetNames = [
@@ -20,7 +21,7 @@ class DatasetProcessor(ABC):
         # 'ucec',
         # 'ad',
     ]
-    datasets = dict()
+    datasets = OrderedDict()
     random_state = 0
     debug = False
     isOnlyUseTranscriptsSharedBetweenDatasets = True
@@ -75,6 +76,31 @@ class DatasetProcessor(ABC):
         else:
             return self.identify_all_targets('transcriptome')
 
+    def filter_transcripts_to_targets(self, targetTranscripts, targetProtein):
+        targetProteinIdx = self.allTranscriptGeneTargets.index(targetProtein)
+        targetProteinColumnTrain = self.X_train[:, targetProteinIdx]
+        targetProteinColumnVal = self.X_val[:, targetProteinIdx]
+        self.X_train = np.delete(self.X_train, targetProteinIdx, axis=1)
+        self.X_val = np.delete(self.X_val, targetProteinIdx, axis=1)
+        self.allTranscriptGeneTargets.pop(targetProteinIdx)
+
+        indices_to_keep = [self.allTranscriptGeneTargets.index(target) for target in targetTranscripts]
+        self.X_train = self.X_train[:, indices_to_keep]
+        self.X_val = self.X_val[:, indices_to_keep]
+        self.allTranscriptGeneTargets = [transcript for transcript in self.allTranscriptGeneTargets if transcript in targetTranscripts]
+
+        self.X_train = np.insert(self.X_train, 0, targetProteinColumnTrain, axis=1)
+        self.X_val = np.insert(self.X_val, 0, targetProteinColumnVal, axis=1)
+        self.allTranscriptGeneTargets.insert(0, targetProtein)
+
+    def filter_to_target_protein(self, targetProtein):
+        index = self.allProteinGeneTargets.index(targetProtein)
+        self.Y_train = self.Y_train[:, index].reshape(-1, 1)
+        self.Y_val = self.Y_val[:, index].reshape(-1, 1)
+        self.allProteinGeneTargets = [targetProtein]
+
+
+
 
     def split_full_dataset(self):
         X_train = []
@@ -91,6 +117,14 @@ class DatasetProcessor(ABC):
         self.X_val = np.concatenate(X_val)
         self.Y_train = np.concatenate(Y_train)
         self.Y_val = np.concatenate(Y_val)
+
+    def extract_full_dataset(self):
+        X = []
+        Y = []
+        for datasetName, dataset in self.datasets.items():
+            X.append(dataset.transcriptome)
+            Y.append(dataset.proteome)
+        return pd.concat(X), pd.concat(Y)
 
     def ensure_mrna_direct_precursors_to_proteins_listed_first_in_transcriptome(self):
         mRNAs_with_direct_protein_match = set(self.allTranscriptGeneTargets).intersection(self.allProteinGeneTargets)

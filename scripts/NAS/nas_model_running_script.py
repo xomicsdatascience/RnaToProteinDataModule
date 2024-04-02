@@ -49,9 +49,8 @@ from torchvision.datasets import MNIST
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import numpy as np
-from RnaToProteinModule import RnaToProteinDataModule
-from Dataset_classes.DatasetProcessors import StandardDatasetProcessor
-from NasModel import NasModel
+from RnaToProteinDataModule import RnaToProteinDataModule, NasModel
+from RnaToProteinDataModule.Dataset_classes import StandardDatasetProcessor
 
 warnings.filterwarnings("ignore")  # Disable data logger warnings
 logging.getLogger("pytorch_lightning").setLevel(logging.INFO)  # Disable GPU/TPU prints

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "RnaToProteinDataModule"
+version = "0.0.1"
+authors = [
+  { name="Caleb Cranney", email="caleb.cranney.github@proton.me" },
+]
+description = ""
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+dependencies = [
+    'pytorch-lightning>=2.2.1',
+    'scikit-learn>=1.1.2',
+    'pandas>=1.2.2',
+    'cptac>=1.5.13',
+]
+
+
+[project.urls]
+"Homepage" = "https://github.com/xomicsdatascience/RnaToProteinDataModule"
+"Bug Tracker" = "https://github.com/xomicsdatascience/RnaToProteinDataModule/issues"
