@@ -1,6 +1,4 @@
 import sys
-from pytorch_lightning import LightningModule, Trainer
-from pytorch_lightning.callbacks import EarlyStopping
 from RnaToProteinDataModule.Dataset_classes import StandardDatasetProcessor
 from RnaToProteinDataModule import make_nas14
 import time
@@ -31,7 +29,7 @@ model, dataModule = make_nas14(dataProcessor)
 
 train_loader = dataModule.train_dataloader()
 background, _ = next(iter(train_loader))
-transcriptome, _ = dataProcessor.extract_full_dataset()
+transcriptome, _, _ = dataProcessor.extract_full_dataset()
 
 test_images = torch.from_numpy(transcriptome.to_numpy()).to(torch.float32)
 outputFile = f'{randomSeed}_{str(rowIdx).zfill(len(str(len(transcriptome))))}_{transcriptome.index[rowIdx]}_array.npz'

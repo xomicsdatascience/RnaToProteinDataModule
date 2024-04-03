@@ -121,10 +121,12 @@ class DatasetProcessor(ABC):
     def extract_full_dataset(self):
         X = []
         Y = []
+        types = []
         for datasetName, dataset in self.datasets.items():
             X.append(dataset.transcriptome)
             Y.append(dataset.proteome)
-        return pd.concat(X), pd.concat(Y)
+            types += [datasetName for _ in range(len(dataset.transcriptome))]
+        return pd.concat(X), pd.concat(Y), types
 
     def ensure_mrna_direct_precursors_to_proteins_listed_first_in_transcriptome(self):
         mRNAs_with_direct_protein_match = set(self.allTranscriptGeneTargets).intersection(self.allProteinGeneTargets)
