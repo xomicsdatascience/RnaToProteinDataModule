@@ -11,7 +11,7 @@ proteinTarget = sys.argv[1]
 randomSeed_dataSplit = 2
 
 #save_dir = '/common/meyerjlab/caleb_SHAP_numpy_arrays'
-save_dir = '/Users/cranneyc/Documents/Projects/CPTAC_analysis/makingABetterModel_NAS/RnaToProteinDataModule/scripts/SHAP/outputs'
+save_dir = '/Users/cranneyc/Documents/Projects/CPTAC_analysis/makingABetterModel_NAS/RnaToProteinDataModule/scripts/SHAP/0SHAP_outputs'
 curDir = os.getcwd()
 
 dataProcessor = StandardDatasetProcessor(random_state=randomSeed_dataSplit, isOnlyCodingTranscripts=False)
