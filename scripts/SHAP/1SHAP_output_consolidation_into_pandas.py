@@ -25,18 +25,20 @@ data = []
 shapFiles = os.listdir(save_dir)
 proteinTargetIdx = list(proteome.columns).index(proteinTarget)
 for file in shapFiles:
-    print(file)
+    print(file, flush=True)
     pattern = r'(\d)_(\d+)_(.+)_array\.npz'
     matches = re.search(pattern, file)
     if not matches: continue
     randomSeed = int(matches.group(1))
     rowIdxMatch = int(matches.group(2))
     patientId = matches.group(3)
-    loaded_array = np.load(os.path.join(save_dir, file))['arr']
-    proteinTargetShapValues = loaded_array[:, :, proteinTargetIdx].flatten()
-    #print(proteinTarget)
-    #print(proteinTargetShapValues)
-    data.append([randomSeed, types[rowIdxMatch], list(transcriptome.index)[rowIdxMatch]] + list(proteinTargetShapValues))
+    try:
+        loaded_array = np.load(os.path.join(save_dir, file))['arr']
+        proteinTargetShapValues = loaded_array[:, :, proteinTargetIdx].flatten()
+        data.append([randomSeed, types[rowIdxMatch], list(transcriptome.index)[rowIdxMatch]] + list(proteinTargetShapValues))
+    except Exception as e:
+        print(f"Error reading file: {file} - {e}", flush=True)
+        continue
 
 df = pd.DataFrame(data, columns=['randomSeed', 'type','id']+list(transcriptome.columns))
 
