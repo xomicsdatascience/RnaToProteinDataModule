@@ -6,13 +6,18 @@ from RnaToProteinDataModule import make_nas14
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.colors as mcolors
+import sys
+import re
+import os
 
+file = sys.argv[1]
+outputDir = sys.argv[2]
+
+print(file)
 randomSeed = 1
 
-def make_dict_of_absolute_mean_SHAP():
-    df = pd.read_csv(
-        '/Users/cranneyc/Documents/Projects/CPTAC_analysis/makingABetterModel_NAS/RnaToProteinDataModule/scripts/SHAP/1SHAP_output_consolidations/consolidated_SHAP_MMP14_rs1-3.csv')
-
+def make_dict_of_absolute_mean_SHAP(file):
+    df = pd.read_csv(file)
     df = df[df['randomSeed']==randomSeed]
     df.drop(columns=['id', 'randomSeed', 'type'], inplace=True)
     abs_mean_values = df.abs().mean()
@@ -32,27 +37,30 @@ def get_transcriptome_proteome():
     transcriptome, proteome, _ = dataProcessor.extract_full_dataset()
     return transcriptome, proteome
 
-def make_dict_of_spearman_values():
+def make_dict_of_spearman_values(protein):
     transcriptome, proteome = get_transcriptome_proteome()
-    column_to_correlate_with = 'MMP14'
+    column_to_correlate_with = protein
     correlation_results = transcriptome.apply(lambda x: proteome[column_to_correlate_with].corr(x, method='spearman'))
     return correlation_results.to_dict()
 
-'''
-absMeanShapDict, meanShapDict = make_dict_of_absolute_mean_SHAP()
-spearmanDict = make_dict_of_spearman_values()
+pattern = r"consolidated_SHAP_(\w+)_\d+"
+match = re.search(pattern, file)
+protein = match.group(1)
+
+#'''
+absMeanShapDict, meanShapDict = make_dict_of_absolute_mean_SHAP(file)
+spearmanDict = make_dict_of_spearman_values(protein)
 shared_keys = set(absMeanShapDict.keys()) & set(spearmanDict.keys())
 merged_dict = {key: {'absMeanSHAP': absMeanShapDict[key], 'spearman': spearmanDict[key], 'meanSHAP': meanShapDict[key]} for key in shared_keys}
 df = pd.DataFrame.from_dict(merged_dict, orient='index')
-df.to_csv('/Users/cranneyc/Documents/Projects/CPTAC_analysis/makingABetterModel_NAS/RnaToProteinDataModule/scripts/SHAP/2_horseshoe_data/shap_vs_spearman.csv')
-print(df)
+
+df.to_csv(os.path.join(outputDir, f'{protein}_shap_vs_spearman.csv'))
 #'''
+#df = pd.read_csv(os.path.join(outputDir, f'{protein}_shap_vs_spearman.csv'), index_col=0)
 
 t, p = get_transcriptome_proteome()
 tc, pc = t.columns, p.columns
 
-print(np.array(pc)[[943, 2354, 2402, 2832, 2892, 3789, 3791, 3793, 4680, 5402, 6379, 6605, 7494]])
-df = pd.read_csv('/Users/cranneyc/Documents/Projects/CPTAC_analysis/makingABetterModel_NAS/RnaToProteinDataModule/scripts/SHAP/2_horseshoe_data/shap_vs_spearman.csv', index_col=0)
 
 print(len(df[df['meanSHAP'] > 0]))
 print(len(df[df['meanSHAP'] < 0]))
@@ -99,7 +107,7 @@ plt.ylabel('absMeanSHAP (log)')
 #plt.ylim(-25, 0)
 #plt.title('Horseshoe Plot')
 #plt.grid(True)
-plt.show()
+plt.savefig(os.path.join(outputDir, f'{protein}_horseshoe.svg'))
 #'''
 
 '''

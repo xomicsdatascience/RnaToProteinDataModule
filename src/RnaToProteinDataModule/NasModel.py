@@ -89,9 +89,20 @@ class NasModel(pl.LightningModule):
 
     def predict(self, input_instance):
         x = torch.from_numpy(np.array(input_instance))
-        print(x)
-        print(input_instance)
-        print(x.shape)
         output = self(x)
-        print(output)
         return self(x)
+
+def get_top_10_indices(predictions, true_values):
+    # Calculate Mean Squared Error (MSE) for each prediction in the batch
+    mse_values = torch.mean((predictions - true_values) ** 2, dim=0)
+
+    # Sort predictions based on MSE values
+    sorted_indices = torch.argsort(mse_values)
+
+    # Select top 10 predictions
+    top_10_indices = sorted_indices[:100]
+    #print('*')
+    #print(len(sorted_indices))
+    #print('**')
+
+    return top_10_indices

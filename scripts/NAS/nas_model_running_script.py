@@ -47,7 +47,6 @@ from torchvision import transforms
 from torchvision.datasets import MNIST
 
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 import numpy as np
 from RnaToProteinDataModule import RnaToProteinDataModule, NasModel
 from RnaToProteinDataModule.Dataset_classes import StandardDatasetProcessor
@@ -100,7 +99,7 @@ def run_training_job(random_state):
     dataProcessor = StandardDatasetProcessor(random_state=random_state, isOnlyCodingTranscripts=args.onlyCodingTranscripts)
     if args.removeCoad: dataProcessor.datasetNames = [x for x in dataProcessor.datasetNames if x != 'coad']
     if args.useUnsharedTranscripts: dataProcessor.isOnlyUseTranscriptsSharedBetweenDatasets = False
-    dataProcessor.debug = True
+    #dataProcessor.debug = True
 
     dataModule = RnaToProteinDataModule(dataProcessor)
     dataModule.prepare_data()
