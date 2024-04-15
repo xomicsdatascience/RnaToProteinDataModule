@@ -1,4 +1,5 @@
 from RnaToProteinDataModule.BlockModules.FullyConnectedBlock import FullyConnectedBlock
 from RnaToProteinDataModule.BlockModules.Resnet3Block import Resnet3Block
 from RnaToProteinDataModule.BlockModules.Resnet4Block import Resnet4Block
+from RnaToProteinDataModule.BlockModules.InputResidual import InputResidual
 from RnaToProteinDataModule.BlockModules.smallLayers import activation, AddResidual, AddMRNA

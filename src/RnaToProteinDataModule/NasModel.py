@@ -56,6 +56,8 @@ class NasModel(pl.LightningModule):
             self.layer3 = Resnet3Block(self.layer2_outputSize, self.out_size, args.activation3, args.dropout3, isLastBlock=True)
         else:
             raise Exception('block 3 value error')
+        self.output_layer = nn.Linear(self.out_size, self.out_size)
+
 
     def forward(self, x):
         if self.isAddmRNA:
@@ -65,6 +67,7 @@ class NasModel(pl.LightningModule):
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x, mRNA)
+        x = self.output_layer(x)
         return x
 
     def training_step(self, batch, batch_idx):
@@ -91,18 +94,3 @@ class NasModel(pl.LightningModule):
         x = torch.from_numpy(np.array(input_instance))
         output = self(x)
         return self(x)
-
-def get_top_10_indices(predictions, true_values):
-    # Calculate Mean Squared Error (MSE) for each prediction in the batch
-    mse_values = torch.mean((predictions - true_values) ** 2, dim=0)
-
-    # Sort predictions based on MSE values
-    sorted_indices = torch.argsort(mse_values)
-
-    # Select top 10 predictions
-    top_10_indices = sorted_indices[:100]
-    #print('*')
-    #print(len(sorted_indices))
-    #print('**')
-
-    return top_10_indices

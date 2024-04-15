@@ -23,10 +23,6 @@ class Resnet3Block(nn.Module):
         )
         self.final_act = activation(act)
         self.final_dropout = nn.Dropout(p=dropout)
-        if isLastBlock:
-            self.output_layer = nn.Linear(c_out, c_out)
-        else:
-            self.output_layer = AddMRNA()
 
 
     def forward(self, x, mRNA=None):
@@ -39,5 +35,4 @@ class Resnet3Block(nn.Module):
         final_y = y3 + y1
         final_y = self.final_act(final_y)
         final_y = self.final_dropout(final_y)
-        final_y = self.output_layer(final_y)
         return final_y

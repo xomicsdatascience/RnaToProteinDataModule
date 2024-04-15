@@ -28,14 +28,9 @@ class FullyConnectedBlock(nn.Module):
                 nn.Dropout(p=dropout),
             ])
         self.after_add_layers = nn.Sequential(*after_add_layers)
-        if isLastBlock:
-            self.output_layer = nn.Linear(c_out, c_out)
-        else:
-            self.output_layer = AddMRNA()
 
     def forward(self, x, mRNA=None):
         x = self.before_add_layers(x)
         x = self.addMRNA(x, mRNA)
         x = self.after_add_layers(x)
-        x = self.output_layer(x)
         return x

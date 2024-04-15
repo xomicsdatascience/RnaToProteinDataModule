@@ -6,6 +6,7 @@ import random
 import numpy as np
 from collections import OrderedDict
 import pandas as pd
+import os
 
 class DatasetProcessor(ABC):
     datasetNames = [
@@ -42,8 +43,17 @@ class DatasetProcessor(ABC):
             self.allProteinGeneTargets = self.allProteinGeneTargets[:100]
             self.allTranscriptGeneTargets = self.allTranscriptGeneTargets[:500]
 
-        if self.isOnlyCodingTranscripts:
-            self.allTranscriptGeneTargets = self.allProteinGeneTargets.copy()
+        current_dir = os.path.dirname(__file__)
+        categoryConsensusFilePath = os.path.join(current_dir, 'category_consensus.tsv')
+
+        transcriptCategories = pd.read_csv(categoryConsensusFilePath, sep='\t')
+        transcriptCategories.columns = ['transcript','order']
+        transcriptCategories = transcriptCategories[~transcriptCategories['transcript'].isin(self.allProteinGeneTargets)]
+        transcriptCategories = transcriptCategories.sort_values(by=['order','transcript'])
+        category_starts = np.where(transcriptCategories['order'].values[:-1] != transcriptCategories['order'].values[1:])[0] + 1 + len(self.allProteinGeneTargets)
+        category_starts = np.array([len(self.allProteinGeneTargets)] + list(category_starts))
+        self.allTranscriptGeneTargets = self.allProteinGeneTargets + return_all_transcripts_of_a_given_order(transcriptCategories, 1) + return_all_transcripts_of_a_given_order(transcriptCategories, 2) + return_all_transcripts_of_a_given_order(transcriptCategories, 3)
+        print(category_starts)
 
         # only use common proteins/transcripts
         for datasetName, dataset in self.datasets.items():
@@ -186,3 +196,6 @@ def return_dataset(datasetSplitter, datasetName):
     else:
         dataset = CptacDataset(datasetSplitter, datasetName)
     return dataset
+
+def return_all_transcripts_of_a_given_order(transcriptCategories, order):
+    return sorted(transcriptCategories[transcriptCategories['order']==order]['transcript'])

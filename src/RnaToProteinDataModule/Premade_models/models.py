@@ -83,21 +83,18 @@ def make_nas14(dataProcessor):
 def make_args_nas14():
     args = {}
     args["log_path"] = 'logsffzqmz3i/117'
-    args["block1_exists"] = True
-    args["block2_exists"] = True
-    args["block3_type"] = 'fully_connect'
-    args["activation3"] = 'tanh'
-    args["dropout3"] = 0.9
     args["addMRNA"] = True
     args["learning_rate"] = 0.00010348571254464918
     args["batch_size"] = 128
+    args["block1_exists"] = True
     args["block1_type"] = 'fully_connect'
+    args["fc1"] = 1
     args["hidden_size1"] = 319
     args["activation1"] = 'sigmoid'
     args["dropout1"] = 0.5195300099102719
-    args["fc1"] = 1
     args["resNetType1"] = None
     args["resNetComplexConnections1"] = None
+    args["block2_exists"] = True
     args["block2_type"] = 'resnet'
     args["hidden_size2"] = 508
     args["activation2"] = 'sigmoid'
@@ -105,6 +102,9 @@ def make_args_nas14():
     args["fc2"] = None
     args["resNetType2"] = 'simple'
     args["resNetComplexConnections2"] = None
+    args["block3_type"] = 'fully_connect'
+    args["activation3"] = 'tanh'
+    args["dropout3"] = 0.9
     args["fc3"] = 1
     return types.SimpleNamespace(**args)
 

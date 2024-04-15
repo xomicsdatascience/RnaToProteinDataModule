@@ -59,33 +59,19 @@ def parse_args():
     parser.add_argument(
         "--log_path", type=str, required=True, help="dir to place tensorboard logs from all trials"
     )
-    parser.add_argument("--block1_exists", action='store_true', help="exists or does not")
-    parser.add_argument("--block2_exists", action='store_true', help="exists or does not")
-    parser.add_argument("--block3_type", type=str, required=True, help="fully_connected, or resnet")
-    parser.add_argument("--activation3", type=str, required=True, help="activation for block 3")
-    parser.add_argument("--dropout3", type=float, required=True, help="dropout probability for block 3")
-    parser.add_argument("--addMRNA", action='store_true', help="add mRNA to final block")
-    parser.add_argument("--learning_rate", type=float, required=True, help="learning rate")
-    parser.add_argument("--batch_size", type=int, required=True, help="batch size")
-    parser.add_argument("--onlyCodingTranscripts", action='store_true', help="only coding transcripts used as input")
-    parser.add_argument("--removeCoad", action='store_true', help="coad might by causing problems")
-    parser.add_argument("--useUnsharedTranscripts", action='store_true', help="coad might by causing problems")
+    parser.add_argument("--insertResidualAfterL1", action='store_true', help="insert input residual between layers 1 and 2")
+    parser.add_argument("--l1i_category0", action='store_true', help="insert input residual between layers 1 and 2")
+    parser.add_argument("--l1i_category1", action='store_true', help="insert input residual between layers 1 and 2")
+    parser.add_argument("--l1i_category2", action='store_true', help="insert input residual between layers 1 and 2")
+    parser.add_argument("--l1i_category3", action='store_true', help="insert input residual between layers 1 and 2")
+    parser.add_argument("--insertResidualAfterL2", action='store_true', help="insert input residual between layers 2 and 3")
+    parser.add_argument("--l2i_category0", action='store_true', help="insert input residual between layers 1 and 2")
+    parser.add_argument("--l2i_category1", action='store_true', help="insert input residual between layers 1 and 2")
+    parser.add_argument("--l2i_category2", action='store_true', help="insert input residual between layers 1 and 2")
+    parser.add_argument("--l2i_category3", action='store_true', help="insert input residual between layers 1 and 2")
 
-    parser.add_argument("--block1_type", type=str, required=False, help="fully_connected, or resnet")
-    parser.add_argument("--hidden_size1", type=int, required=False, help="hidden layer size for layers in block 1")
-    parser.add_argument("--activation1", type=str, required=False, help="activation for block 1")
-    parser.add_argument("--dropout1", type=float, required=False, help="dropout probability for block 1")
-    parser.add_argument("--fc1", type=int, required=False, help="number of layers in block 1")
-    parser.add_argument("--resNetType1", type=str, required=False, help="determine type of resnet (simple vs complex)")
-    parser.add_argument("--resNetComplexConnections1", type=int, required=False, help="determine connections in block 1 complex resnet")
-    parser.add_argument("--block2_type", type=str, required=False, help="fully_connected, or resnet")
-    parser.add_argument("--hidden_size2", type=int, required=False, help="hidden layer size for layers in block 1")
-    parser.add_argument("--activation2", type=str, required=False, help="activation for block 1")
-    parser.add_argument("--dropout2", type=float, required=False, help="dropout probability for block 1")
-    parser.add_argument("--fc2", type=int, required=False, help="number of layers in block 1")
-    parser.add_argument("--resNetType2", type=str, required=False, help="determine type of resnet (simple vs complex)")
-    parser.add_argument("--resNetComplexConnections2", type=int, required=False, help="determine connections in block 1 complex resnet")
-    parser.add_argument("--fc3", type=int, required=False, help="number of layers in block 3")
+    parser.add_argument("--addMRNA_during", action='store_true', help="add mRNA to final block")
+    parser.add_argument("--addMRNA_after", action='store_true', help="add mRNA after final block")
     return parser.parse_args()
 
 args = parse_args()
@@ -96,9 +82,7 @@ epochs = 5000
 def run_training_job(random_state):
     torch.manual_seed(random_state)
 
-    dataProcessor = StandardDatasetProcessor(random_state=random_state, isOnlyCodingTranscripts=args.onlyCodingTranscripts)
-    if args.removeCoad: dataProcessor.datasetNames = [x for x in dataProcessor.datasetNames if x != 'coad']
-    if args.useUnsharedTranscripts: dataProcessor.isOnlyUseTranscriptsSharedBetweenDatasets = False
+    dataProcessor = StandardDatasetProcessor(random_state=random_state, isOnlyCodingTranscripts=False)
     #dataProcessor.debug = True
 
     dataModule = RnaToProteinDataModule(dataProcessor)
@@ -135,7 +119,7 @@ def run_training_job(random_state):
 if __name__ == "__main__":
     logger = pl_loggers.TensorBoardLogger(args.log_path)
     losses = []
-    for i in range(5):
+    for i in range(4,5):
         losses.append(run_training_job(random_state=i))
     logger.log_metrics({"val_loss": np.median(losses)})
     logger.save()
