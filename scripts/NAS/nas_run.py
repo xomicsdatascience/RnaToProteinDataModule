@@ -68,10 +68,10 @@ def trainer(trial_idx: int = -1, *args, **kwargs) -> specs.AppDef:
     values = []
     for key, value in kwargs.items():
         if key in ['root']: continue
-        if key in ['block1_exists', 'block2_exists', 'addMRNA', 'onlyCodingTranscripts', "removeCoad", "useUnsharedTranscripts"]:
-            if value: values += [f'--{key}']
+        if key == 'log_path':
+            values += [f'--{key}', f'{value}']
             continue
-        values += [f'--{key}', str(value)]
+        if value: values += [f'--{key}']
 
     output = utils.python(
         *values,
@@ -112,227 +112,89 @@ parameters = [
         value='true',
         parameter_type=ParameterType.STRING,
         dependents={'true':[
-            "block1_exists",
-            "block2_exists",
-            "block3_type",
-            "activation3",
-            "dropout3",
-            "addMRNA",
-            "learning_rate",
-            "batch_size",
-            "onlyCodingTranscripts",
-            "removeCoad",
+            "insertResidualAfterL1",
+            "insertResidualAfterL2",
+            "addMRNA_during",
+            "addMRNA_after",
         ]}
     ),
     ChoiceParameter(
-        name="block1_exists",
+        name="insertResidualAfterL1",
         values=[True, False],
         parameter_type=ParameterType.BOOL,
         dependents={
             True:[
-                "block1_type",
-                "hidden_size1",
-                "activation1",
-                "dropout1",
+                "l1i_category0",
+                "l1i_category1",
+                "l1i_category2",
+                "l1i_category3",
             ],
             False:[],
         }
     ),
     ChoiceParameter(
-        name="block1_type",
-        values=["fully_connect", "resnet"],
-        parameter_type=ParameterType.STRING,
-        dependents={
-            "fully_connect":[
-                "fc1",
-            ],
-            "resnet":[
-                "resNetType1",
-            ]
-        }
-    ),
-    RangeParameter(
-        name="fc1",
-        lower=1,
-        upper=3,
-        parameter_type=ParameterType.INT,
-    ),
-    ChoiceParameter(
-        name="resNetType1",
-        values=["simple", "complex"],
-        parameter_type=ParameterType.STRING,
-        dependents={
-            "simple":[],
-            "complex":[
-                "resNetComplexConnections1",
-            ],
-        }
-    ),
-    RangeParameter(
-        name="resNetComplexConnections1",
-        lower=1,
-        upper=31,
-        parameter_type=ParameterType.INT,
-    ),
-    RangeParameter(
-        name="hidden_size1",
-        lower=200,
-        upper=1200,
-        parameter_type=ParameterType.INT,
-        log_scale=True,
-    ),
-    ChoiceParameter(
-        name="activation1",
-        values=["leaky_relu_steep", "leaky_relu_slight", "sigmoid", "tanh", "selu"],
-        parameter_type=ParameterType.STRING,
-        is_ordered=False,
-        sort_values=False,
-    ),
-    RangeParameter(
-        name="dropout1",
-        lower=0.0,
-        upper=0.9,
-        parameter_type=ParameterType.FLOAT,
-    ),
-    ChoiceParameter(
-        name="block2_exists",
-        values=[True, False],
-        parameter_type=ParameterType.BOOL,
-        dependents={
-            True:[
-                "block2_type",
-                "hidden_size2",
-                "activation2",
-                "dropout2",
-            ],
-            False:[],
-        }
-    ),
-    ChoiceParameter(
-        name="block2_type",
-        values=["fully_connect", "resnet"],
-        parameter_type=ParameterType.STRING,
-        dependents={
-            "fully_connect":[
-                "fc2",
-            ],
-            "resnet":[
-                "resNetType2",
-            ]
-        }
-    ),
-    RangeParameter(
-        name="fc2",
-        lower=1,
-        upper=3,
-        parameter_type=ParameterType.INT,
-    ),
-    ChoiceParameter(
-        name="resNetType2",
-        values=["simple", "complex"],
-        parameter_type=ParameterType.STRING,
-        dependents={
-            "simple":[],
-            "complex":[
-                "resNetComplexConnections2",
-            ],
-        }
-    ),
-    RangeParameter(
-        name="resNetComplexConnections2",
-        lower=1,
-        upper=31,
-        parameter_type=ParameterType.INT,
-    ),
-    RangeParameter(
-        name="hidden_size2",
-        lower=200,
-        upper=900,
-        parameter_type=ParameterType.INT,
-        log_scale=True,
-    ),
-    ChoiceParameter(
-        name="activation2",
-        values=["leaky_relu_steep", "leaky_relu_slight", "sigmoid", "tanh", "selu"],
-        parameter_type=ParameterType.STRING,
-        is_ordered=False,
-        sort_values=False,
-    ),
-    RangeParameter(
-        name="dropout2",
-        lower=0.0,
-        upper=0.9,
-        parameter_type=ParameterType.FLOAT,
-    ),
-    ChoiceParameter(
-        name="block3_type",
-        values=["fully_connect", "resnet"],
-        parameter_type=ParameterType.STRING,
-        is_ordered=False,
-        sort_values=False,
-        dependents={
-            "fully_connect": [
-                "fc3",
-            ],
-            "resnet": [
-            ]
-        }
-    ),
-    RangeParameter(
-        name="fc3",
-        lower=1,
-        upper=3,
-        parameter_type=ParameterType.INT,
-    ),
-    ChoiceParameter(
-        name="activation3",
-        values=["leaky_relu_steep", "leaky_relu_slight", "sigmoid", "tanh", "selu"],
-        parameter_type=ParameterType.STRING,
-        is_ordered=False,
-    ),
-    RangeParameter(
-        name="dropout3",
-        lower=0.0,
-        upper=0.9,
-        parameter_type=ParameterType.FLOAT,
-    ),
-    ChoiceParameter(
-        name="addMRNA",
+        name="l1i_category0",
         values=[True, False],
         parameter_type=ParameterType.BOOL,
     ),
     ChoiceParameter(
-        name="onlyCodingTranscripts",
+        name="l1i_category1",
+        values=[True, False],
+        parameter_type=ParameterType.BOOL,
+    ),
+    ChoiceParameter(
+        name="l1i_category2",
+        values=[True, False],
+        parameter_type=ParameterType.BOOL,
+    ),
+    ChoiceParameter(
+        name="l1i_category3",
+        values=[True, False],
+        parameter_type=ParameterType.BOOL,
+    ),
+    ChoiceParameter(
+        name="insertResidualAfterL2",
         values=[True, False],
         parameter_type=ParameterType.BOOL,
         dependents={
-            True: [],
-            False: ['useUnsharedTranscripts'],
+            True: [
+                "l2i_category0",
+                "l2i_category1",
+                "l2i_category2",
+                "l2i_category3",
+            ],
+            False: [],
         }
     ),
     ChoiceParameter(
-        name="useUnsharedTranscripts",
+        name="l2i_category0",
         values=[True, False],
         parameter_type=ParameterType.BOOL,
     ),
     ChoiceParameter(
-        name="removeCoad",
+        name="l2i_category1",
         values=[True, False],
         parameter_type=ParameterType.BOOL,
     ),
-    RangeParameter(
-        name="learning_rate",
-        lower=1e-4,
-        upper=1e-2,
-        parameter_type=ParameterType.FLOAT,
-        log_scale=True,
+    ChoiceParameter(
+        name="l2i_category2",
+        values=[True, False],
+        parameter_type=ParameterType.BOOL,
     ),
     ChoiceParameter(
-        name="batch_size",
-        values=[32, 64, 128],
-        parameter_type=ParameterType.INT,
-        is_ordered=True,
-        sort_values=True,
+        name="l2i_category3",
+        values=[True, False],
+        parameter_type=ParameterType.BOOL,
+    ),
+    ChoiceParameter(
+        name="addMRNA_during",
+        values=[True, False],
+        parameter_type=ParameterType.BOOL,
+    ),
+    ChoiceParameter(
+        name="addMRNA_after",
+        values=[True, False],
+        parameter_type=ParameterType.BOOL,
     ),
 ]
 
@@ -401,6 +263,5 @@ scheduler = Scheduler(
 
 scheduler.run_all_trials()
 
-
 df = exp_to_df(experiment).sort_values('val_loss', ascending=True)
-df.to_csv(os.path.join(curDir, f'sample_dataset_nas_output_{time.strftime("%Y%m%d-%H%M%S")}.csv'), index=False)
+df.to_csv(os.path.join(curDir, f'sample_dataset_nas_output_input_residual{time.strftime("%Y%m%d-%H%M%S")}.csv'), index=False)
