@@ -243,7 +243,7 @@ experiment = Experiment(
     runner=ax_runner,
 )
 
-total_trials = 20  # total evaluation budget
+total_trials = 40  # total evaluation budget
 
 
 gs = choose_generation_strategy(
@@ -257,7 +257,7 @@ scheduler = Scheduler(
     experiment=experiment,
     generation_strategy=gs,
     options=SchedulerOptions(
-        total_trials=total_trials, max_pending_trials=10
+        total_trials=total_trials, max_pending_trials=5
     ),
 )
 

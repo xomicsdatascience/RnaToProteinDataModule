@@ -1,4 +1,4 @@
-#'''
+'''
 import logging
 import sys
 import io
@@ -59,19 +59,11 @@ def parse_args():
     parser.add_argument(
         "--log_path", type=str, required=True, help="dir to place tensorboard logs from all trials"
     )
-    parser.add_argument("--insertResidualAfterL1", action='store_true', help="insert input residual between layers 1 and 2")
-    parser.add_argument("--l1i_category0", action='store_true', help="insert input residual between layers 1 and 2")
-    parser.add_argument("--l1i_category1", action='store_true', help="insert input residual between layers 1 and 2")
-    parser.add_argument("--l1i_category2", action='store_true', help="insert input residual between layers 1 and 2")
-    parser.add_argument("--l1i_category3", action='store_true', help="insert input residual between layers 1 and 2")
-    parser.add_argument("--insertResidualAfterL2", action='store_true', help="insert input residual between layers 2 and 3")
-    parser.add_argument("--l2i_category0", action='store_true', help="insert input residual between layers 1 and 2")
-    parser.add_argument("--l2i_category1", action='store_true', help="insert input residual between layers 1 and 2")
-    parser.add_argument("--l2i_category2", action='store_true', help="insert input residual between layers 1 and 2")
-    parser.add_argument("--l2i_category3", action='store_true', help="insert input residual between layers 1 and 2")
+    parser.add_argument("--category0", action='store_true', help="insert input residual between layers 1 and 2")
+    parser.add_argument("--category1", action='store_true', help="insert input residual between layers 1 and 2")
+    parser.add_argument("--category2", action='store_true', help="insert input residual between layers 1 and 2")
+    parser.add_argument("--category3", action='store_true', help="insert input residual between layers 1 and 2")
 
-    parser.add_argument("--addMRNA_during", action='store_true', help="add mRNA to final block")
-    parser.add_argument("--addMRNA_after", action='store_true', help="add mRNA after final block")
     return parser.parse_args()
 
 args = parse_args()
