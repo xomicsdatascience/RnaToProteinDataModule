@@ -14,7 +14,8 @@ class NasModel(pl.LightningModule):
         self.batch_size = 128
         self.in_size = in_size
         self.out_size = out_size
-        self.category2Start = 35420
+        #self.category2Start = 35420
+        self.category2Start = 15958
         self.category3Start = 49049
         self.layer1_size = 319
         self.layer2_size = 508
