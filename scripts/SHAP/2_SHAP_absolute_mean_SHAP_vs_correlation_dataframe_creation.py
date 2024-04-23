@@ -47,7 +47,6 @@ pattern = r"consolidated_SHAP_(\w+)_\d+"
 match = re.search(pattern, file)
 protein = match.group(1)
 
-'''
 absMeanShapDict, meanShapDict = make_dict_of_absolute_mean_SHAP(file)
 spearmanDict = make_dict_of_spearman_values(protein)
 shared_keys = set(absMeanShapDict.keys()) & set(spearmanDict.keys())
@@ -55,42 +54,3 @@ merged_dict = {key: {'absMeanSHAP': absMeanShapDict[key], 'spearman': spearmanDi
 df = pd.DataFrame.from_dict(merged_dict, orient='index')
 
 df.to_csv(os.path.join(outputDir, f'{protein}_shap_vs_spearman.csv'))
-#'''
-
-#df = pd.read_csv(os.path.join(outputDir, f'{protein}_shap_vs_spearman.csv'), index_col=0)
-df = pd.read_csv('/Users/cranneyc/Desktop/SHAP_consolidation_figures/horseshoe/noMRNA/MMP14_shap_vs_spearman_noMRNA.csv', index_col=0)
-#df = pd.read_csv('/Users/cranneyc/Desktop/SHAP_consolidation_figures/horseshoe/MMP14_shap_vs_spearman.csv', index_col=0)
-
-t, p = get_transcriptome_proteome()
-tc, pc = t.columns, p.columns
-
-arr = np.log(df['absMeanSHAP'])
-shapArr = np.array(df['absMeanSHAP'])
-indexArr = np.array(df.index)
-lowest_non_inf = np.min(arr[np.isfinite(arr)])
-
-arr[np.isinf(arr)] = lowest_non_inf
-arr[np.isneginf(arr)] = lowest_non_inf
-df['absMeanSHAP'] = arr
-
-current_dir = os.path.dirname(__file__)
-categoryConsensusFilePath = os.path.join(current_dir, 'category_consensus.tsv')
-categoryDict = dict(np.genfromtxt(categoryConsensusFilePath, delimiter='\t', dtype=str))
-df['category'] = [int(categoryDict[x]) for x in df.index]
-df = df[df['category'] != 3]
-
-
-#'''
-
-plt.figure(figsize=(8, 6))
-#sns.scatterplot(data=df, x='spearman', y='absMeanSHAP', cmap='YlGnBu', s=0.75)
-
-#plot = sns.jointplot(data=df, x='spearman', y='absMeanSHAP', kind='hex', cmap="Blues", vmax=250)
-plot = sns.jointplot(data=df, x='spearman', y='absMeanSHAP', hue='category', kind='kde', palette={0: 'blue', 1: 'red', 2:'green'})
-
-plt.xlabel('spearman')
-plt.ylabel('absMeanSHAP (log)')
-
-#plt.savefig(os.path.join(outputDir, f'{protein}_horseshoe_experiment.svg'))
-plt.show()
-#'''
