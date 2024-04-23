@@ -47,7 +47,7 @@ pattern = r"consolidated_SHAP_(\w+)_\d+"
 match = re.search(pattern, file)
 protein = match.group(1)
 
-#'''
+'''
 absMeanShapDict, meanShapDict = make_dict_of_absolute_mean_SHAP(file)
 spearmanDict = make_dict_of_spearman_values(protein)
 shared_keys = set(absMeanShapDict.keys()) & set(spearmanDict.keys())
@@ -56,68 +56,41 @@ df = pd.DataFrame.from_dict(merged_dict, orient='index')
 
 df.to_csv(os.path.join(outputDir, f'{protein}_shap_vs_spearman.csv'))
 #'''
+
 #df = pd.read_csv(os.path.join(outputDir, f'{protein}_shap_vs_spearman.csv'), index_col=0)
+df = pd.read_csv('/Users/cranneyc/Desktop/SHAP_consolidation_figures/horseshoe/noMRNA/MMP14_shap_vs_spearman_noMRNA.csv', index_col=0)
+#df = pd.read_csv('/Users/cranneyc/Desktop/SHAP_consolidation_figures/horseshoe/MMP14_shap_vs_spearman.csv', index_col=0)
 
 t, p = get_transcriptome_proteome()
 tc, pc = t.columns, p.columns
 
-
-print(len(df[df['meanSHAP'] > 0]))
-print(len(df[df['meanSHAP'] < 0]))
-print(len(df[df['meanSHAP'] == 0]))
-print('*')
-
 arr = np.log(df['absMeanSHAP'])
 shapArr = np.array(df['absMeanSHAP'])
 indexArr = np.array(df.index)
-arr[np.isinf(arr)] = -20
-arr[np.isneginf(arr)] = -20
+lowest_non_inf = np.min(arr[np.isfinite(arr)])
+
+arr[np.isinf(arr)] = lowest_non_inf
+arr[np.isneginf(arr)] = lowest_non_inf
 df['absMeanSHAP'] = arr
 
-transcripts = list(t.columns)
-numCoding = len(p.columns)
-df['order'] = df.index.map(lambda x: transcripts.index(x) if x in transcripts else -1)
-
-print(len(df[(df['absMeanSHAP'] > -10) & (df['order'] >= numCoding)]))
-print(len(df[(df['absMeanSHAP'] > -10) & (df['order'] < numCoding)]))
-print(len(df[(df['absMeanSHAP'] <= -10) & (df['order'] >= numCoding)]))
-print(len(df[(df['absMeanSHAP'] <= -10) & (df['order'] < numCoding)]))
-print(df[(df['absMeanSHAP'] <= -10) & (df['order'] <= numCoding)])
-print(len(set(df[(df['absMeanSHAP'] <= -10) & (df['order'] < numCoding)].index).intersection(set(p.columns))))
-print(set(df[(df['absMeanSHAP'] <= -10) & (df['order'] < numCoding)].index) - set(p.columns))
-print(df)
-
+current_dir = os.path.dirname(__file__)
+categoryConsensusFilePath = os.path.join(current_dir, 'category_consensus.tsv')
+categoryDict = dict(np.genfromtxt(categoryConsensusFilePath, delimiter='\t', dtype=str))
+df['category'] = [int(categoryDict[x]) for x in df.index]
+df = df[df['category'] != 3]
 
 
 #'''
-#colors = [(1, 1, 1)] + sns.color_palette("YlGnBu", as_cmap=True)
-#custom_cmap = mcolors.LinearSegmentedColormap.from_list("custom_cmap", colors)
 
-
-# Plain scatterplot
 plt.figure(figsize=(8, 6))
-#sns.scatterplot(data=df, x='spearman', y='absMeanSHAP', cmap='YlGnBu', s=100)
-plot = sns.jointplot(data=df, x='spearman', y='absMeanSHAP', kind='hex', cmap="Blues", vmax=250)
-#plt.scatter(df['spearman'], df['absMeanSHAP'])
-#plt.hexbin(df['spearman'], df['absMeanSHAP'], gridsize=50, cmap='YlGnBu', mincnt=1)
+#sns.scatterplot(data=df, x='spearman', y='absMeanSHAP', cmap='YlGnBu', s=0.75)
+
+#plot = sns.jointplot(data=df, x='spearman', y='absMeanSHAP', kind='hex', cmap="Blues", vmax=250)
+plot = sns.jointplot(data=df, x='spearman', y='absMeanSHAP', hue='category', kind='kde', palette={0: 'blue', 1: 'red', 2:'green'})
 
 plt.xlabel('spearman')
 plt.ylabel('absMeanSHAP (log)')
-#plt.yscale('log')
-#plt.ylim(-25, 0)
-#plt.title('Horseshoe Plot')
-#plt.grid(True)
-plt.savefig(os.path.join(outputDir, f'{protein}_horseshoe.svg'))
-#'''
 
-'''
-pivot_table = df.pivot_table(index='absMeanSHAP', columns='spearman', aggfunc='size', fill_value=0)
-
-# Plot the heatmap
-plt.figure(figsize=(10, 8))
-sns.heatmap(pivot_table, cmap='YlGnBu', annot=True, fmt='g', cbar_kws={'label': 'Density'})
-plt.xlabel('Value from dict1')
-plt.ylabel('Value from dict2')
-plt.title('Heatmap of Density')
+#plt.savefig(os.path.join(outputDir, f'{protein}_horseshoe_experiment.svg'))
 plt.show()
-'''
+#'''

@@ -27,6 +27,8 @@ class NasModel(pl.LightningModule):
         if self.category1: insertSize += self.category2Start - self.out_size
         if self.category2: insertSize += self.category3Start - self.category2Start
         if self.category3: insertSize += self.in_size - self.category3Start
+        if insertSize == 0:
+            insertSize = self.out_size
 
         self.layer1 = FullyConnectedBlock(self.in_size, c_out=self.layer1_size, act="sigmoid", dropout=0.5195300099102719, num_layers=1)
         self.layer2 = Resnet3Block(self.layer1_size, self.layer2_size, act="sigmoid", dropout=0.6866931863414947)
@@ -45,7 +47,10 @@ class NasModel(pl.LightningModule):
         if self.category1: residuals.append(cat1Transcripts)
         if self.category2: residuals.append(cat2Transcripts)
         if self.category3: residuals.append(cat3Transcripts)
-        residualInsert = torch.concatenate(residuals, axis=1)
+        if len(residuals):
+            residualInsert = torch.concatenate(residuals, axis=1)
+        else:
+            residualInsert = torch.zeros_like(mRNA)
 
         x = self.layer1(x)
         x = self.layer2(x)
