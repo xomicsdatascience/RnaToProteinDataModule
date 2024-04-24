@@ -80,7 +80,7 @@ def run_training_job(random_state):
     dataModule = RnaToProteinDataModule(dataProcessor)
     dataModule.prepare_data()
     dataModule.setup(stage=None)
-    cptac_model = NasModel(dataModule.input_size, dataModule.output_size, args)
+    cptac_model = NasModel(dataModule.input_size, dataModule.output_size, args, dataModule.dataProcessor.categoryLengths)
 
     # Initialize a trainer (don't log anything since things get so slow...)
     trainer = Trainer(

@@ -44,16 +44,14 @@ class DatasetProcessor(ABC):
             self.allTranscriptGeneTargets = self.allTranscriptGeneTargets[:500]
 
         current_dir = os.path.dirname(__file__)
-        categoryConsensusFilePath = os.path.join(current_dir, 'category_consensus.tsv')
-
-        transcriptCategories = pd.read_csv(categoryConsensusFilePath, sep='\t')
+        categoryConsensusFilePath = os.path.join(current_dir, 'categories_consensus.tsv')
+        transcriptCategories = pd.read_csv(categoryConsensusFilePath, sep='\t', header=None)
         transcriptCategories.columns = ['transcript','order']
-        transcriptCategories = transcriptCategories[~transcriptCategories['transcript'].isin(self.allProteinGeneTargets)]
         transcriptCategories = transcriptCategories.sort_values(by=['order','transcript'])
-        category_starts = np.where(transcriptCategories['order'].values[:-1] != transcriptCategories['order'].values[1:])[0] + 1 + len(self.allProteinGeneTargets)
-        category_starts = np.array([len(self.allProteinGeneTargets)] + list(category_starts))
-        self.allTranscriptGeneTargets = self.allProteinGeneTargets + return_all_transcripts_of_a_given_order(transcriptCategories, 1) + return_all_transcripts_of_a_given_order(transcriptCategories, 2) + return_all_transcripts_of_a_given_order(transcriptCategories, 3)
-        print(category_starts)
+        self.allTranscriptGeneTargets = list(transcriptCategories['transcript'])
+        value_counts = transcriptCategories['order'].value_counts().sort_index()
+        self.categoryLengths = value_counts.tolist()
+
 
         # only use common proteins/transcripts
         for datasetName, dataset in self.datasets.items():
