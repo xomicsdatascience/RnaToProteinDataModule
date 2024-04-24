@@ -11,21 +11,28 @@ import numpy as np
 print ('argument list', sys.argv)
 rowIdx = int(sys.argv[1])
 randomSeed = int(sys.argv[2])
-randomSeed_dataSplit = 2
+if len(sys.argv) > 3:
+    categories = sys.argv[3]
+else:
+    categories = None
 
-#save_dir = '/common/meyerjlab/caleb_SHAP_numpy_arrays'
-save_dir = '/Users/cranneyc/Documents/Projects/CPTAC_analysis/makingABetterModel_NAS/RnaToProteinDataModule/scripts/SHAP/0SHAP_outputs'
+if categories:
+    categoryDir = categories.replace(',', '_')
+else:
+    categoryDir = 'noResidual'
+#save_dir = '/common/meyerjlab/caleb_SHAP_numpy_arrays_by_category'
+save_dir = '/Users/cranneyc/Documents/Projects/CPTAC_analysis/RnaToProteinDataModule/scripts/SHAP/0_SHAP_outputs'
+
+save_dir = os.path.join(save_dir, categoryDir)
+
 curDir = os.getcwd()
 log_dir = tempfile.mkdtemp(prefix='logs_zDELETE', dir=curDir)
 torch.manual_seed(randomSeed)
 
-dataProcessor = StandardDatasetProcessor(random_state=randomSeed_dataSplit, isOnlyCodingTranscripts=False)
+dataProcessor = StandardDatasetProcessor(random_state=randomSeed, isOnlyCodingTranscripts=False)
 dataProcessor.debug = True
-dataProcessor.prepare_data()
-dataProcessor.synchronize_all_datasets()
-dataProcessor.split_full_dataset()
 
-model, dataModule = make_nas14(dataProcessor)
+model, dataModule = make_nas14(dataProcessor, categories)
 
 train_loader = dataModule.train_dataloader()
 background, _ = next(iter(train_loader))

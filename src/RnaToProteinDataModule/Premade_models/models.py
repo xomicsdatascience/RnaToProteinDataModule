@@ -62,50 +62,46 @@ def run_nas14(dataProcessor):
         val_loss = trainer.validate(datamodule=dataModule)[0]["val_loss"]
     return val_loss
 
-def make_nas14(dataProcessor):
-    args = make_args_nas14()
+def make_nas14(dataProcessor, categories):
+    args = make_args_nas14(categories)
     dataModule = RnaToProteinDataModule(dataProcessor)
     dataModule.prepare_data()
     dataModule.setup(stage=None)
-    cptac_model = NasModel(dataModule.input_size, dataModule.output_size, args)
+    cptac_model = NasModel(dataModule.input_size, dataModule.output_size, args, dataModule.dataProcessor.categoryLengths)
 
     # Initialize a trainer (don't log anything since things get so slow...)
     trainer = Trainer(
         logger=False,
+        max_epochs=1000,
+        #enable_progress_bar=False,
         deterministic=True,  # Do we want a bit of noise?
+        default_root_dir=args.log_path,
         callbacks=[EarlyStopping(monitor="val_loss", mode="min", patience=10)]
     )
+    start = time.time()
+    trainer.fit(cptac_model, dataModule)
+    num_epochs = trainer.current_epoch
+    end = time.time()
+    print("Training completed in {} epochs.".format(num_epochs))
 
-    # Train the model and log time ⚡
-    trainer.fit(model=cptac_model, datamodule=dataModule)
+    with io.capture_output() as captured:
+        val_loss = trainer.validate(datamodule=dataModule)[0]["val_loss"]
+    print(f"train time: {end - start}, val loss: {val_loss}")#, num_params: {num_params}")
+
     return cptac_model, dataModule
 
-def make_args_nas14():
+def make_args_nas14(categories):
+    if categories:
+        categorySet = set([int(x) for x in categories.split(',')])
+    else:
+        categorySet = set()
     args = {}
     args["log_path"] = 'logsffzqmz3i/117'
-    args["addMRNA"] = True
-    args["learning_rate"] = 0.00010348571254464918
-    args["batch_size"] = 128
-    args["block1_exists"] = True
-    args["block1_type"] = 'fully_connect'
-    args["fc1"] = 1
-    args["hidden_size1"] = 319
-    args["activation1"] = 'sigmoid'
-    args["dropout1"] = 0.5195300099102719
-    args["resNetType1"] = None
-    args["resNetComplexConnections1"] = None
-    args["block2_exists"] = True
-    args["block2_type"] = 'resnet'
-    args["hidden_size2"] = 508
-    args["activation2"] = 'sigmoid'
-    args["dropout2"] = 0.6866931863414947
-    args["fc2"] = None
-    args["resNetType2"] = 'simple'
-    args["resNetComplexConnections2"] = None
-    args["block3_type"] = 'fully_connect'
-    args["activation3"] = 'tanh'
-    args["dropout3"] = 0.9
-    args["fc3"] = 1
+    for i in range(4):
+        catTag = f"category{i}"
+        args[catTag] = False
+        if i in categorySet:
+            args[catTag] = True
     return types.SimpleNamespace(**args)
 
 def base_model_training(X_train, X_val, y_train, y_val):

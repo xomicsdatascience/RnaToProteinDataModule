@@ -9,7 +9,7 @@ from RnaToProteinDataModule.BlockModules import activation, AddMRNA, AddResidual
 class NasModel(pl.LightningModule):
     def __init__(self, in_size, out_size, args, categoryCounts):
         super().__init__()
-
+        print(args)
         self.learning_rate = 0.00010348571254464918
         self.batch_size = 128
         self.in_size = in_size
@@ -22,7 +22,7 @@ class NasModel(pl.LightningModule):
         self.category2 = args.category2
         self.category3 = args.category3
         insertSize = 0
-        if self.category0: insertSize += categoryCounts[0]
+        if self.category0: insertSize += self.out_size
         if self.category1: insertSize += categoryCounts[1]
         if self.category2: insertSize += categoryCounts[2]
         if self.category3: insertSize += categoryCounts[3]
@@ -37,8 +37,8 @@ class NasModel(pl.LightningModule):
 
     def forward(self, x):
         cumulative_sum = [sum(self.categoryCounts[:i + 1]) for i in range(len(self.categoryCounts))]
-        mRNA = x[:, :cumulative_sum[0]]
-        cat1Transcripts = x[:, cumulative_sum[0]:cumulative_sum[1]]
+        mRNA = x[:, :self.out_size]
+        cat1Transcripts = x[:, self.out_size:cumulative_sum[1]]
         cat2Transcripts = x[:, cumulative_sum[1]:cumulative_sum[2]]
         cat3Transcripts = x[:, cumulative_sum[2]:]
 
