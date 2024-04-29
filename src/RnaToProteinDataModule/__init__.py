@@ -1,3 +1,3 @@
 from RnaToProteinDataModule.NasModel_Residuals import NasModel
 from RnaToProteinDataModule.RnaToProteinModule import RnaToProteinDataModule
-from RnaToProteinDataModule.Premade_models.models import run, make_nas14
+from RnaToProteinDataModule.Premade_models.models import run, make_nas14_dataModule, make_nas14_model

@@ -10,6 +10,7 @@ import torch.optim as optim
 import time
 import os
 import types
+import tempfile
 
 from IPython.utils import io
 from pytorch_lightning import Trainer
@@ -41,11 +42,11 @@ def run_base(dataProcessor):
     return base_model_training(dataProcessor.X_train, dataProcessor.X_val, dataProcessor.Y_train, dataProcessor.Y_val)
 
 def run_nas14(dataProcessor):
-    args = make_args_nas14()
+    args = make_args_nas14('0')
     dataModule = RnaToProteinDataModule(dataProcessor)
     dataModule.prepare_data()
     dataModule.setup(stage=None)
-    cptac_model = NasModel(dataModule.input_size, dataModule.output_size, args)
+    cptac_model = NasModel(dataModule.input_size, dataModule.output_size, args, dataModule.dataProcessor.categoryLengths)
 
     # Initialize a trainer (don't log anything since things get so slow...)
     trainer = Trainer(
@@ -62,11 +63,15 @@ def run_nas14(dataProcessor):
         val_loss = trainer.validate(datamodule=dataModule)[0]["val_loss"]
     return val_loss
 
-def make_nas14(dataProcessor, categories):
-    args = make_args_nas14(categories)
+def make_nas14_dataModule(dataProcessor):
     dataModule = RnaToProteinDataModule(dataProcessor)
     dataModule.prepare_data()
     dataModule.setup(stage=None)
+    return dataModule
+
+
+def make_nas14_model(dataModule, categories):
+    args = make_args_nas14(categories)
     cptac_model = NasModel(dataModule.input_size, dataModule.output_size, args, dataModule.dataProcessor.categoryLengths)
 
     # Initialize a trainer (don't log anything since things get so slow...)
@@ -88,7 +93,7 @@ def make_nas14(dataProcessor, categories):
         val_loss = trainer.validate(datamodule=dataModule)[0]["val_loss"]
     print(f"train time: {end - start}, val loss: {val_loss}")#, num_params: {num_params}")
 
-    return cptac_model, dataModule
+    return cptac_model
 
 def make_args_nas14(categories):
     if categories:
@@ -96,7 +101,10 @@ def make_args_nas14(categories):
     else:
         categorySet = set()
     args = {}
-    args["log_path"] = 'logsffzqmz3i/117'
+
+    curDir = os.getcwd()
+    log_dir = tempfile.mkdtemp(prefix='logs_zDELETE', dir=os.path.join(curDir, 'logs'))
+    args["log_path"] = log_dir
     for i in range(4):
         catTag = f"category{i}"
         args[catTag] = False
