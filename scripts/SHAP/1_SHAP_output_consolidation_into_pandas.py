@@ -8,10 +8,11 @@ import pandas as pd
 
 print ('argument list', sys.argv)
 proteinTarget = sys.argv[1]
+save_dir = sys.argv[2]
+category = save_dir.split('/')[-1]
+outputDir = '1_SHAP_consolidations'
 randomSeed_dataSplit = 2
 
-#save_dir = '/common/meyerjlab/caleb_SHAP_numpy_arrays'
-save_dir = '/Users/cranneyc/Documents/Projects/CPTAC_analysis/makingABetterModel_NAS/RnaToProteinDataModule/scripts/SHAP/0SHAP_outputs'
 curDir = os.getcwd()
 
 dataProcessor = StandardDatasetProcessor(random_state=randomSeed_dataSplit, isOnlyCodingTranscripts=False)
@@ -24,7 +25,7 @@ transcriptome, proteome, types = dataProcessor.extract_full_dataset()
 data = []
 shapFiles = os.listdir(save_dir)
 proteinTargetIdx = list(proteome.columns).index(proteinTarget)
-for file in shapFiles:
+for file in sorted(shapFiles):
     print(file, flush=True)
     pattern = r'(\d)_(\d+)_(.+)_array\.npz'
     matches = re.search(pattern, file)
@@ -42,5 +43,5 @@ for file in shapFiles:
 
 df = pd.DataFrame(data, columns=['randomSeed', 'type','id']+list(transcriptome.columns))
 
-df.to_csv(f'consolidated_SHAP_{proteinTarget}_{time.strftime("%Y%m%d-%H%M%S")}.csv', index=False)
+df.to_csv(os.path.join(outputDir, f'consolidated_SHAP_{proteinTarget}_category{category}_{time.strftime("%Y%m%d-%H%M%S")}.csv'), index=False)
 

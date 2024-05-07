@@ -30,7 +30,7 @@ class Resnet3Block(nn.Module):
             pass
         y1 = self.layer1(x)
         y2 = self.layer2(y1)
-        y2 = self.addMRNA(y2, mRNA)
+        y2 = self.addMRNA(y2, y1)
         y3 = self.layer3(y2)
         final_y = y3 + y1
         final_y = self.final_act(final_y)

@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import torch
 from RnaToProteinDataModule.Dataset_classes import StandardDatasetProcessor
-from RnaToProteinDataModule import make_nas14
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.colors as mcolors
@@ -29,18 +28,25 @@ df['absMeanSHAP'] = arr
 categoryDict = dict(np.genfromtxt(categoryConsensusFilePath, delimiter='\t', dtype=str))
 df['category'] = [int(categoryDict[x]) for x in df.index]
 df = df[df['category'] != 3]
-
 plt.figure(figsize=(8, 6))
 #sns.scatterplot(data=df, x='spearman', y='absMeanSHAP', cmap='YlGnBu', s=0.75)
 #plot = sns.jointplot(data=df, x='spearman', y='absMeanSHAP', kind='hex', cmap="Blues", vmax=250)
 plot = sns.jointplot(data=df, x='spearman', y='absMeanSHAP', hue='category', kind='kde', palette={0: 'blue', 1: 'red', 2:'green', 3:'orange'})
 
+plot.ax_joint.set_ylim(-25.5, -2)
 plt.xlabel('spearman')
 plt.ylabel('absMeanSHAP (log)')
 
-pattern = r"(\w+)_shap_vs_spearman"
+#pattern = r"(\w+)_shap_vs_spearman"
+pattern = r"(\w+)_category(\d)?_shap_vs_spearman"
 match = re.search(pattern, absShapCorrelationFile)
 protein = match.group(1)
+if match.lastindex == 2:
+    category = match.group(2)
+else:
+    category = ''
 
-plt.savefig(os.path.join(outputDir, f'{protein}_horseshoe_experiment.svg'))
+#plt.savefig(os.path.join(outputDir, f'{protein}_categorynoResidual_horseshoe_experiment.svg'))
+#plt.savefig(os.path.join(outputDir, f'{protein}_category0_horseshoe_experiment.svg'))
+plt.savefig(os.path.join(outputDir, f'{protein}_category{category}_horseshoe_experiment.svg'))
 #plt.show()

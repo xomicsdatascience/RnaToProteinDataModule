@@ -42,9 +42,6 @@ from pytorch_lightning.callbacks import EarlyStopping
 from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from torchmetrics.functional.classification.accuracy import multiclass_accuracy
-from torchvision import transforms
-from torchvision.datasets import MNIST
 
 import pandas as pd
 import numpy as np
