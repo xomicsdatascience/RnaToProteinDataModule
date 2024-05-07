@@ -26,6 +26,7 @@ stderr_logger = logging.getLogger('STDERR')
 sys.stderr = StreamToLogger(stderr_logger, logging.ERROR)
 
 print(' '.join(sys.argv))
+# NAS14NN: python nas_model_running_script.py --log_path logsffzqmz3i --block1_exists --block2_exists --block3_type fully_connect --activation3 tanh --dropout3 0.9 --addMRNA --learning_rate 0.00010348571254464918 --batch_size 128 --block1_type fully_connect --hidden_size1 319 --activation1 sigmoid --dropout1 0.5195300099102719 --fc1 1 --block2_type resnet --hidden_size2 508 --activation2 sigmoid --dropout2 0.6866931863414947 --resNetType2 simple --fc3 1
 #'''
 import argparse
 import logging
