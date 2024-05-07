@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KDE Scatter Plot with Interactive Legend</title>
+  <style>
+    /* Add some basic styling */
+    body {
+      font-family: Arial, sans-serif;
+    }
+   .legend {
+      font-size: 12px;
+    }
+   .legend:hover {
+      cursor: pointer;
+    }
+   .highlight {
+      stroke: #333;
+      stroke-width: 2px;
+    }
+   .fade {
+      opacity: 0.2;
+    }
+  </style>
+</head>
+<body>
+  <div id="chart"></div>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    // Set up the SVG
+    const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+    const width = 500 - margin.left - margin.right;
+    const height = 300 - margin.top - margin.bottom;
+    const svg = d3.select('#chart')
+     .append('svg')
+     .attr('width', width + margin.left + margin.right)
+     .attr('height', height + margin.top + margin.bottom)
+     .append('g')
+     .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+    // Load the data
+    console.log('hi');
+
+    d3.json('data_noResidual.json').then(function(data) {
+      // Create a color scale for the categories
+      const colorScale = d3.scaleOrdinal()
+       .domain([...new Set(data.map(d => d.category))]) // get unique categories
+       .range(d3.schemeCategory10); // use a categorical color scheme
+
+      // Create the SVG container
+      const svg = d3.select("body")
+       .append("svg")
+       .attr("width", 800)
+       .attr("height", 600)
+       .attr("viewBox", [0, 0, 800, 600]);
+
+      // Create the scales
+      const xScale = d3.scaleLinear()
+       .domain(d3.extent(data, d => d.spearman))
+       .range([50, 750]);
+
+      const yScale = d3.scaleLinear()
+       .domain(d3.extent(data, d => d.absMeanSHAP))
+       .range([500, 50]);
+
+      // Create a KDE contour for all data
+      const allDataContours = d3.contourDensity()
+       .x(d => xScale(d.spearman))
+       .y(d => yScale(d.absMeanSHAP))
+       .size([800, 600])
+       .bandwidth(30)
+       .thresholds(30)
+        (data);
+
+      const allDataGroup = svg.append("g")
+       .attr("class", "all-data")
+       .attr("fill", "none")
+       .attr("stroke", "gray")
+       .attr("stroke-linejoin", "round")
+       .attr("opacity", 1);
+
+      allDataGroup.selectAll()
+       .data(allDataContours)
+       .join("path")
+       .attr("stroke-width", (d, i) => i % 5? 0.25 : 1)
+       .attr("d", d3.geoPath());
+
+      // Create KDE contours for each category
+      const categories = [...new Set(data.map(d => d.category))];
+
+      categories.forEach((category, i) => {
+        const categoryData = data.filter(d => d.category === category);
+        const contours = d3.contourDensity()
+         .x(d => xScale(d.spearman))
+         .y(d => yScale(d.absMeanSHAP))
+         .size([800, 600])
+         .bandwidth(30)
+         .thresholds(30)
+          (categoryData);
+
+        // Append the contours for this category
+        const contourGroup = svg.append("g")
+         .attr("class", `category-${category}`)
+         .attr("fill", "none")
+         .attr("stroke", colorScale(category))
+         .attr("stroke-linejoin", "round")
+         .attr("opacity", 0); // initially hidden
+
+        contourGroup.selectAll()
+         .data(contours)
+         .join("path")
+         .attr("stroke-width", (d, i) => i % 5? 0.5 : 2)
+         .attr("d", d3.geoPath());
+      });
+
+
+      // Append the legend
+      const legend = svg.append("g")
+       .attr("transform", `translate(650, 20)`);
+
+      legend.selectAll()
+       .data(categories)
+       .join("g")
+       .append("rect")
+       .attr("x", 0)
+       .attr("y", (d, i) => i * 20)
+       .attr("width", 15)
+       .attr("height", 15)
+       .attr("fill", d => colorScale(d));
+
+      legend.selectAll()
+       .data(categories)
+       .join("text")
+       .attr("x", 20)
+       .attr("y", (d, i) => i * 20 + 10)
+       .text(d => d);
+
+      legend.selectAll("rect")
+       .on("mouseover", function(event, category) {
+          svg.select(".all-data")
+           .attr("opacity", 0.2);
+          svg.select(`.category-${category}`)
+           .attr("opacity", 1);
+        })
+       .on("mouseout", function(event, category) {
+          svg.select(".all-data")
+           .attr("opacity", 1);
+          svg.selectAll(`[class^="category-"]`)
+           .attr("opacity", 0);
+        });
+
+   })
+  .catch(function(error) {
+    console.log(error);
+  });
+
+  </script>
+</body>
+</html>
