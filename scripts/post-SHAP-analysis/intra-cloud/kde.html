@@ -42,7 +42,7 @@
     // Load the data
     console.log('hi');
 
-    d3.json('data_noResidual.json').then(function(data) {
+    d3.json('data.json').then(function(data) {
       // Create a color scale for the categories
       const colorScale = d3.scaleOrdinal()
        .domain([...new Set(data.map(d => d.category))]) // get unique categories
