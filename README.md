@@ -1,9 +1,17 @@
-# RnaToProteinDataModule
+## Manubot Project
 
-My classes for using CPTAC and AD data reproducibly. My scripts for using those classes are also included.
+This repository contains the analysis code for the Manubot project [_Multi-Dataset Integration and Residual Connections Improve Proteome Prediction from Transcriptomics Using Deep Learning_](https://github.com/xomicsdatascience/transcriptome-proteome-nas-manubot).
+
+### Scripts
+
+Files used for running our code are found under the `scripts` directory. The files under `scripts/NAS` are based on [the Multi-Objective NAS with Ax](https://pytorch.org/tutorials/intermediate/ax_multiobjective_nas_tutorial.html) tutorial. The files under `scripts/5x2` were for generating the boxplot inside figure 1. `scripts/SHAP` contains preliminary code for running SHAP on the model. Note that the branch `input_residual_connection` contains a more complete setup for the SHAP runs used in the paper.
+
+### src
+
+The two main files to consider are `src/RnaToProteinDataModule/NasModel.py`, which contains the deep learning model used, and `src/RnaToProteinDataModule/RnaToProteinDataModule.py`, which performs the bulk of the data processing steps. 
 
 ## M1 Mac Issues
-I should note that pytorch gives me trouble fairly often. I need to run the following to set up the environment appropriately. I'm putting it here so I don't lose any more hours reinventing this wheel.
+`pytorch` often gives Mac users trouble. Below is a script that bypasses most errors when installing the necessary packages for a Mac.
 
 ```
 conda create -n <env name>
