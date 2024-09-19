@@ -32,6 +32,6 @@ class RnaToProteinDataModule(pl.LightningDataModule):
         torch.manual_seed(self.dataProcessor.random_state)
         return DataLoader(self.train_dataset, batch_size=64, shuffle=True)
 
-    def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=64, shuffle=False)
+    def val_dataloader(self, batch_size=64):
+        return DataLoader(self.val_dataset, batch_size=batch_size, shuffle=False)
 
