@@ -62,22 +62,25 @@ def run_nas14(dataProcessor):
         val_loss = trainer.validate(datamodule=dataModule)[0]["val_loss"]
     return val_loss
 
-def make_nas14(dataProcessor):
+def make_nas14(dataProcessor, model_save_path=None):
     args = make_args_nas14()
     dataModule = RnaToProteinDataModule(dataProcessor)
     dataModule.prepare_data()
     dataModule.setup(stage=None)
-    cptac_model = NasModel(dataModule.input_size, dataModule.output_size, args)
+    if os.path.exists(model_save_path):
+        cptac_model = torch.load(model_save_path)
+    else:
+        cptac_model = NasModel(dataModule.input_size, dataModule.output_size, args)
 
-    # Initialize a trainer (don't log anything since things get so slow...)
-    trainer = Trainer(
-        logger=False,
-        deterministic=True,  # Do we want a bit of noise?
-        callbacks=[EarlyStopping(monitor="val_loss", mode="min", patience=10)]
-    )
+        # Initialize a trainer (don't log anything since things get so slow...)
+        trainer = Trainer(
+            logger=False,
+            deterministic=True,  # Do we want a bit of noise?
+            callbacks=[EarlyStopping(monitor="val_loss", mode="min", patience=10)]
+        )
 
-    # Train the model and log time ⚡
-    trainer.fit(model=cptac_model, datamodule=dataModule)
+        # Train the model and log time ⚡
+        trainer.fit(model=cptac_model, datamodule=dataModule)
     return cptac_model, dataModule
 
 def make_args_nas14():

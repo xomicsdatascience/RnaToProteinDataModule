@@ -3,7 +3,7 @@ import numpy as np
 import time
 import os
 import sys
-import _5x2_models
+from RnaToProteinDataModule import run
 from RnaToProteinDataModule.Dataset_classes import FiveByTwoTargetDatasetProcessor
 
 datasetNames = [
@@ -33,7 +33,7 @@ print(targetDataset)
 print(iterationNum)
 print(targetModel)
 
-val_loss_func = _5x2_models.run(targetModel)
+val_loss_func = run(targetModel)
 
 for orientation in ['first','second']:
     for trainingMethod in ['allDatasets','justTargetDataset']:
