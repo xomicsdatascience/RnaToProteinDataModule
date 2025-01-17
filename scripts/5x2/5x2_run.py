@@ -22,7 +22,7 @@ datasetNames = [
 ]
 numDatasets = len(datasetNames)
 numIterations = 50
-models = ['dummy','forest','baseNN','NAS14NN']
+models = ['dummy','forest','baseNN','NAS14NN', 'forest_gene_specific']
 
 curIdx = int(sys.argv[1])
 targetModel = sys.argv[2]

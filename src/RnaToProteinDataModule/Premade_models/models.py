@@ -10,6 +10,7 @@ import torch.optim as optim
 import time
 import os
 import types
+import pickle
 
 from IPython.utils import io
 from pytorch_lightning import Trainer
@@ -20,6 +21,7 @@ from RnaToProteinDataModule import RnaToProteinDataModule, NasModel
 def run(model):
     if model == 'dummy': return run_dummy
     if model == 'forest': return run_forest
+    if model == 'forest_gene_specific': return run_forest_gene_specific
     if model == 'baseNN': return run_base
     if model == 'NAS14NN': return run_nas14
 
@@ -36,6 +38,34 @@ def run_forest(dataProcessor):
     y_pred = model.predict(dataProcessor.X_val)
     mse = mean_squared_error(dataProcessor.Y_val, y_pred)
     return mse
+
+def run_forest_gene_specific(dataProcessor, type='single-tissue'):
+    mse_scores = {}
+    for i, y_col in enumerate(dataProcessor.allProteinGeneTargets):
+        print(y_col)
+        y_train = dataProcessor.Y_train[:, i]
+        y_val = dataProcessor.Y_val[:, i]
+
+        # Train a random forest regressor on the current Y column
+        model = RandomForestRegressor(
+            max_features='log2',
+            max_depth=5,
+            n_estimators=100,
+            random_state=42  # Added for reproducibility
+        )
+        model.fit(dataProcessor.X_train, y_train)
+
+        # Predict and calculate MSE score
+        y_pred = model.predict(dataProcessor.X_val)
+        mse = mean_squared_error(y_val, y_pred)
+        mse_scores[y_col] = mse
+
+        # Save the model to a file
+        with open(f'model_{y_col}_{type}.pickle', 'wb') as f:
+            pickle.dump(model, f)
+    print(mse_scores)
+    return sum(mse_scores.values()) / len(mse_scores)
+
 
 def run_base(dataProcessor):
     return base_model_training(dataProcessor.X_train, dataProcessor.X_val, dataProcessor.Y_train, dataProcessor.Y_val)
