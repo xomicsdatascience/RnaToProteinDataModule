@@ -21,7 +21,7 @@ from RnaToProteinDataModule import RnaToProteinDataModule, NasModel
 def run(model):
     if model == 'dummy': return run_dummy
     if model == 'forest': return run_forest
-    if model == 'forest_gene_specific': return run_forest_gene_specific
+    if model == 'dream_challenge': return run_dream_challenge
     if model == 'baseNN': return run_base
     if model == 'NAS14NN': return run_nas14
 
@@ -39,33 +39,39 @@ def run_forest(dataProcessor):
     mse = mean_squared_error(dataProcessor.Y_val, y_pred)
     return mse
 
-def run_forest_gene_specific(dataProcessor, type='single-tissue'):
-    mse_scores = {}
-    for i, y_col in enumerate(dataProcessor.allProteinGeneTargets):
-        print(y_col)
+
+def run_dream_challenge(dataProcessor, w1: float = 1.0, w2: float = 3.0):
+    num_samples_val = dataProcessor.X_val.shape[0]
+    num_proteins = len(dataProcessor.allProteinGeneTargets)
+
+    # Model 1: RNA correlation predictions
+    # Use the matching RNA values for each protein
+    rna_predictions = dataProcessor.X_val[:, :num_proteins]
+
+    # Model 3: Random Forest predictions
+    rf_predictions = np.zeros((num_samples_val, num_proteins))
+
+    X_train_matched = dataProcessor.X_train[:, :num_proteins]
+    X_val_matched = dataProcessor.X_val[:, :num_proteins]
+    for i, protein in enumerate(dataProcessor.allProteinGeneTargets):
         y_train = dataProcessor.Y_train[:, i]
-        y_val = dataProcessor.Y_val[:, i]
-
-        # Train a random forest regressor on the current Y column
         model = RandomForestRegressor(
-            max_features='log2',
-            max_depth=5,
-            n_estimators=100,
-            random_state=42  # Added for reproducibility
+            n_estimators=100,  # From original model
+            max_depth=5,       # From original model
+            random_state=314   # altered from original model - 3.14 not allowed
         )
-        model.fit(dataProcessor.X_train, y_train)
+        model.fit(X_train_matched, y_train)
 
-        # Predict and calculate MSE score
-        y_pred = model.predict(dataProcessor.X_val)
-        mse = mean_squared_error(y_val, y_pred)
-        mse_scores[y_col] = mse
+        rf_predictions[:, i] = model.predict(X_val_matched)
 
-        # Save the model to a file
-        with open(f'model_{y_col}_{type}.pickle', 'wb') as f:
-            pickle.dump(model, f)
-    print(mse_scores)
-    return sum(mse_scores.values()) / len(mse_scores)
+    # Ensemble the predictions using weighted average
+    w_total = w1 + w2
+    ensemble_predictions = (w1 / w_total * rna_predictions +
+                            w2 / w_total * rf_predictions)
 
+    # Calculate MSE on the ensemble predictions
+    mse = mean_squared_error(dataProcessor.Y_val, ensemble_predictions)
+    return mse
 
 def run_base(dataProcessor):
     return base_model_training(dataProcessor.X_train, dataProcessor.X_val, dataProcessor.Y_train, dataProcessor.Y_val)
